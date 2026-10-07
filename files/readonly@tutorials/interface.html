@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <header style="text-decoration:underline; font-size:1.2em;">
+      More on the interface: the WebApp mode
+    </h2></header>
+    <section>
+      <header><h2>Introduction</h2></header>
+      <p>NB: this tutorial is for advanced users / developers only. For basics of the Macaulay2Web interface, see the <a href="#tutorial-welcome">welcome tutorial</a>.
+      </p>
+      <p>
+	There are various new features of this Macaulay2web interface (compared to the traditional terminal/emacs interface). Here we focus on the underlying \(\mac\) code: in order to work and produce LaTeX/HTML output, this web interface uses <code>topLevelMode=WebApp</code>, a special output mode of \(\mac\).
+	(If you're nostalgic, you can always revert to <code>topLevelMode=Standard</code> for your usual terminal/ascii output.)
+      </p>
+      <p>The next few pages are meant for package developers or advanced users who wish to understand how to make the output of their programs look nice in WebApp mode. For more background information one may also consult my <a href="#tutorial-M2internals">M2internals presentation</a>.</p>
+    </section>
+    <section>
+      <header><h2>KaTeX</h2></header>
+      <p>By default, all mathematical output is processed by the \(\mac\) command <tt>texMath</tt> and then rendered to the browser using <a href="https://katex.org/">KaTeX</a>:
+	<pre><code>matrix table(5,5,(i,j)->i*j)</code></pre>
+      </p>
+      <p>All built-in mathematical types have a method <tt>texMath</tt> (or at least they should!). If you define your own type, say,
+	<pre><code>MyType = new Type of BasicList</code></pre>
+	then it is a good idea to define your own method <tt>texMath</tt>. For example, you could write
+	<pre><code>
+            texMath MyType := x -> concatenate(
+                                     ///\begin{bmatrix}///,
+                                     demark(///\\///,texMath\toList x),
+                                     ///\end{bmatrix}///
+                                   );
+	</pre></code>
+	et voilà:
+	<pre><code>
+	    A = new MyType from {2,3,5,7}
+	</code></pre>
+	Note however that the `net` output (the one you would get in a terminal or in emacs) is unaffected and needs to
+	be redefined separately:
+	<pre><code>
+	    net A
+	</code></pre>
+      </p>
+    </section>
+    <section>
+      <header><h2>Using <tt>expression</tt></h2></header>
+      <p>As a slight digression, a more efficient way to define output routines may be to use <code>expression</code>.
+	Here's how it works:
+	<pre><code>texMath MyType := x -> texMath expression x;</code></pre>
+	and then for example
+	<pre><code>expression MyType := x -> (
+	  if #x===0 then return expression 0;
+	  if #x===1 then return expression x#0;
+	  expression x#0 + 1 / expression drop(x,1)
+	  );</code></pre>
+	The advantage is that several forms of output can then be written at once; e.g., you can also have
+	<pre><code>net MyType := x -> net expression x; toString MyType := x -> toString expression x;</code></pre>
+	Let us try:
+	<pre><code>F = new MyType from a_0..a_5</code></pre>
+	<pre><code>net F</code></pre>
+	<pre><code>toString F</code></pre>
+      </p>
+    </section>
+    <section>
+      <header><h2>HTML and Hypertext</h2></header>
+      <p>Being a web interface, this interface has native support for HTML output.</p>
+      <p>
+	For non mathematical types such as <tt>Net</tt> and <tt>String</tt>, direct HTML output (rather than KaTeX) is used.
+	This is controlled by the method <tt>html</tt>.
+      </p>
+      <p>
+	One can also produce arbitrary HTML output using the package <tt>Text</tt>:<br/>
+	<pre><code>needsPackage "Text"</code></pre>
+      </p>
+      <p>
+	HTML classes in \(\mac\) are <tt>MarkUpType</tt>s with common ancestor the type <tt>Hypertext</tt>.
+	<tt>MarkUpType</tt>s are self-initializing:
+	<pre><code> DIV { BOLD { "hello" }, HR {}, OL {"stuff", "more stuff", LI {"and more"} }, BR{},
+	  ANCHOR { "href" => "http://macaulay2.com", "A link" }, " and some code: ", CODE { QQ[x,y,z] } }</code></pre>
+	Note how <tt>LI</tt> is optional inside <tt>OL</tt> or <tt>UL</tt>.
+      </p>
+      <p>
+	All HTML items can take options:
+	<pre><code>IMG { "src"=>"http://www.lpthe.jussieu.fr/~pzinn/M2.jpg", "alt"=>"Melbourne likes M2", "width"=>"200" }</code></pre>
+	A particularly important one is <tt>style</tt>:
+	<pre><code>mychord = UL { LI {"C","style"=>"color:red"}, "E", "G", "style"=>"color:green" }</code></pre>
+	which is why it has its own function:
+	<pre><code>style(mychord, "background" => "yellow", "font-size"=>"2em")</code></pre>
+      </p>
+      <p>
+	Style is ignored in <tt>Standard</tt> mode (<tt>net</tt> output):
+	<pre><code>net mychord</code></pre>
+      </p>
+      <p>
+	Using <tt>style</tt> is often preferable to styling directly with HTML attributes; e.g., in the examples above, substitute
+	<pre><code>style( SPAN { "hello" }, "font-weight" => "bold" )</code></pre>
+	<pre><code>style( IMG { "src"=>"http://www.lpthe.jussieu.fr/~pzinn/M2.jpg" }, "width" => "10em" )</code></pre>
+      </p>
+    </section>
+    <section>
+      <header><h2>Direct HTML output</h2></header>
+      <p>
+	For your package to work with this interface,
+	it needs to have either a <tt>texMath</tt> or <tt>html</tt> method for all defined types. (By default,
+	these methods will be inherited from ancestor types, which may or may not be to your liking.)
+      </p>
+      <p>Say your type is
+	<pre><code>MyType = new Type of BasicList</code></pre>
+	For types corresponding to mathematical objects, you should define as explained above a <tt>texMath</tt> method.
+	Let us try instead the <tt>html</tt> method for our type; we break it into steps for convenience, first converting to a <tt>Hypertext</tt> type using
+	the <tt>hypertext</tt> method, then converting the <tt>Hypertext</tt> to HTML using <tt>html</tt>:
+	<pre><code>needsPackage "Text";</code></pre>
+	<pre><code>
+	    hypertext MyType := x -> style(UL toList x,
+	    "background"=>"orange",
+	    "border"=>"1px solid",
+	    "padding" =>"20px 25px 20px 40px")</code></pre>
+	<pre><code>html MyType := html @@ hypertext</code></pre>
+	Let us test it:
+	<pre><code>new MyType from {"ha",1/2,1-ii,QQ[x]}</code></pre>
+      </p>
+    </section>
+    <section>
+      <header><h2>VectorGraphics</h2></header>
+      <p>
+	Another type of HTML item is available: <tt>SVG</tt> (scalable vector graphics). It can be accessed via the package <tt>VectorGraphics</tt>.
+	<pre><code>needsPackage "VectorGraphics"</code></pre>
+      </p>
+      <p>
+	Some examples:
+	<pre><code>uglyLogo=gList(Ellipse{vector{0,0},90,30,"stroke"=>"none",Blur=>0.3,
+	  "fill"=>linearGradient{("0%","stop-color:red"),("100%","stop-color:yellow")}},
+	  GraphicsText{vector{-65,-7},"Macaulay2",
+	  FontSize=>25,"stroke"=>"black","stroke-width"=>"0.5%","fill"=>"white"},
+	  AnimMatrix=>translation[0,0,10],Size=>30)</code></pre>
+	The next one mixes KaTeX and HTML output:
+	<pre><code>rgb={"red","green","blue"}; scan(rgb, x -> globalAssign(value x,
+	  Circle{"fill"=>x,"stroke"=>"black",Size=>vector{0.8,0.8},Margin=>0}));
+	  R=QQ[x_red,x_green,x_blue]; print describe R; res cokernel vars R</code></pre>
+      </p>
+      <p>To access the underlying SVG object, just write
+	<pre><code>SVG uglyLogo</code></pre>
+	<pre><code>style(oo,"background"=>"black")</code></pre>
+      </p>
+      <p>For more information, consult the help:
+	<pre><code>viewHelp VectorGraphics</code></pre>
+      </p>
+    </section>
+    <section>
+    <header><h2>Existing packages</h2></header>
+      <p>
+        If you find a package whose output in the web interface looks weird, try to apply the instructions above
+	(i.e., define <tt>texMath</tt> or <tt>html</tt> methods) and see if it improves the output. If successful,
+	consider submitting a PR!
+      </p>
+      <p>
+	Some packages already have support for HTML output; this makes it easy to adapt them to the web interface, for example:
+	<pre><code>needsPackage "Graphs"</code></pre>
+	Now check out:
+	<pre><code>help graph</code></pre>
+      </p>
+    </section>
+  </body>
+</html>
