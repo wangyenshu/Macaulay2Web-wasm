@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sample tutorial</title>
+    <nav>
+      <p>
+	You can write your own tutorial, and then load it on this website
+	(or, give it to your students, and let them load it). Download the
+	file <a href="/sample.md" target="_blank">sample.md</a>
+	which is both a template for your own tutorial, and a guide for how to write one.
+	Or click on the lessons below to see the result.
+      </p>
+    </nav>
+  </head>
+  <body>
+    <h1>My great tutorial (D. Hilbert)</h1>
+    <section>
+      <header><h2>Example lesson title</h2></header>
+      <p>
+	The simplest way to produce a tutorial is by writing it in markdown.
+	This tutorial was written in a simple markdown format (the slightly simplified source
+	is <a href="/sample.md" target="_blank">sample.md</a>). After changing it,
+	you upload the resulting file (file name with a .md extension) via the &quot;LOAD TUTORIAL&quot; button
+	from the home page.  Give your modified file to your students for them to upload (or just give them the URL, e.g.,
+	<a href="#tutorial-sample">this tutorial</a>), so they can work through your lessons.
+      </p>
+      <p>
+	The line that begins with # is
+	the title for the tutorial.  Lines that begin with ## give the names
+	of each lesson.  Macaulay2
+	code that you wish to become buttons should be enclosed by backquotes (	`	) or
+	triple backquotes (	```	), as is shown below.
+      </p>
+      <p>
+	Blank lines start new paragraphs.
+      </p>
+    </section>
+    <section>
+      <header><h2>Code</h2></header>
+      <p>
+	Macaulay2 commands (which will be displayed as clickable buttons) are
+	enclosed in triple backquotes (as is standard in many markdown
+	languages). Here we have blank lines between them, but that is not
+	required.
+      </p>
+      <code class='block'>R = QQ[x]</code>
+      <code class='block'>x^3-x-1</code>
+      <p>
+	or inline: <code>factor(x^2-1)</code>.
+      </p>
+      <p>
+	Multiple lines can be placed in one button too.
+      </p>
+      <code class='block'>f = x -&gt; (
+	x^3-x-1
+	)</code>
+    </section>
+    <section>
+      <header><h2>KaTeX</h2></header>
+      <p>
+	We use KaTeX, which means that you can include math, in the following way:
+	using <strong>\(</strong> <strong>\)</strong> for inline: \(f(x) = x^3-\sin x + 1\), or in display form via
+	<strong>\[</strong> <strong>\]</strong>:
+	\[ \sum_{i=0}^n (x_i y_i + 1). \]
+      </p>
+    </section>
+    <section>
+      <header><h2>More markdown</h2></header>
+      <p>Other recognized markdown includes:
+	<ul>
+	  <li>lists</li>
+	  <li><em>various</em> <u>standard</u> <strong>style</strong> <u><strong>modifications</strong></u></li>
+	  <li><a href='https://github.com/pzinn/Macaulay2Web'>links</a></li>
+	  <li>tables</li>
+	</ul>
+	<table><tr><td> 1 </td><td> 2 </td><td> 3 </td></tr><tr><td> 4 </td><td> 5 </td><td> 6 </td></tr></table>
+      </p>
+      <p>
+	Caveat: markdown conversion can interfere with (Ka)TeX code.
+      </p>
+    </section>
+    <section>
+      <header><h2>Other accepted formats</h2></header>
+      <h3>HTML lessons</h3>
+      <p>All tutorials are ultimately converted to HTML (see <a href="tutorials/sample.html" target="_blank">this tutorial</a>).
+	You can also upload lessons directly in HTML (file name with a <tt>.html</tt> extension).
+	Use <tt>&lt;code&gt;</tt> for Macaulay2 code.
+	This offers the most flexibility since no translation is performed except the following.
+      </p>
+      <p>The <tt>&lt;title&gt;</tt> tag (or the <tt>&lt;header&gt;</tt> if the former is absent) is used as title of the tutorial.
+	Every <tt>&lt;section&gt;</tt> is a page (lesson) in the tutorial.
+	The <tt>&lt;header&gt;</tt> of each <tt>&lt;section&gt;</tt> is its title (for the table of contents on the HOME tab).
+	All content outside <tt>&lt;section&gt;</tt> will appear in every lesson.
+	If there is a <tt>&lt;nav&gt;</tt> section it will be transferred to the HOME tab (right before the table of contents).
+      </p>
+      <p>
+	The behavior when clicking on code can also be altered using classes: <tt>run</tt> (the default behavior
+	of <tt>&lt;code&gt;</tt>)
+	vs <tt>norun</tt> (replaces the current input but is not sent, just like past input) vs <tt>autorun</tt>
+	(runs immediately when the tutorial is displayed); and <tt>copy</tt> (the output is copied from the terminal
+	to the tutorial itself, default when full screen) vs <tt>nocopy</tt> (default when not in full screen).
+	Here's an example of <tt>run</tt> <tt>copy</tt>:
+	<br/>
+	<code class='block run copy'>1+1</code>
+	<br/>
+	Buttons or other HTML gadgets can be made to run arbitrary code by using the field <tt>data-m2code</tt>:
+	<br/>
+	<button data-m2code="print res coker vars (QQ[α,β,γ])" class="run copy">Press here for a surprise!</button>
+	<br/>
+	You can even make the code invisible: here's invisible <tt>autorun</tt> <tt>copy</tt> code:
+	<br/>
+	$\pi=$<code class='autorun copy' style='display:none'>print numeric pi</code>
+	<br/>
+      </p>
+      <h3>M2 files</h3>
+      <p>You can directly upload a Macaulay2 file (file name with a .m2 extension). This will simply take you to the editor;
+	it is almost the same as using the "LOAD" button of the editor, except the file will be uploaded to the tutorials
+	directory which is shared by all users, which means your file is now accessible to all.
+	Note that the tutorials directory files are read-only in the editor.
+      </p>
+    </section>
+  </body>
+</html>
